@@ -3,3 +3,5 @@ data/*.db
 data/*.db-wal
 data/*.db-shm
 .env
+.vercel
+.env*

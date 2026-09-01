@@ -8,7 +8,8 @@ COPY scripts ./scripts
 FROM node:22-slim
 ENV NODE_ENV=production PORT=3000 TRUST_PROXY=1
 WORKDIR /app
-RUN useradd -r -u 1001 apiuser
+# UID 1000: required by some container hosts (e.g. Hugging Face Spaces)
+RUN useradd -m -u 1000 apiuser
 COPY --from=build /app /app
 # Ship the ingested database inside the image (rebuild image to refresh data),
 # or mount a volume at /app/data and run "npm run ingest" instead.

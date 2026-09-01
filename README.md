@@ -19,10 +19,30 @@ Product data © [Open Food Facts](https://openfoodfacts.org) contributors,
 licensed [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Code is
 [MIT](LICENSE).
 
+<p align="center">
+  <img src="docs/screenshots/pos-desktop.png" alt="ProdukPOS desktop register mode" width="68%">
+  <img src="docs/screenshots/pos-mobile.png" alt="ProdukPOS mobile" width="23.5%">
+</p>
+
 ---
+
+## Live instance
+
+| | URL |
+|---|---|
+| **API base** | `https://produkpos.vercel.app/v1` |
+| **Interactive API docs** | https://produkpos.vercel.app/docs |
+| **ProdukPOS cashier app** | https://produkpos.vercel.app/pos/ |
+
+Try it right now:
+
+```bash
+curl 'https://produkpos.vercel.app/v1/search?q=indomie&per_page=3'
+```
 
 ## Table of contents
 
+- [Live instance](#live-instance)
 - [Quick start](#quick-start)
 - [Architecture](#architecture)
 - [API reference](#api-reference)
@@ -60,14 +80,12 @@ Then open:
 
 ```mermaid
 flowchart LR
-    OFF[Open Food Facts\nsearch API] -->|npm run ingest| DB[(SQLite\nproducts.db\n+ FTS5 index)]
-    DB -->|read-only| API[Fastify API\n/v1/*]
-    API --> DOCS[Swagger UI\n/docs]
-    API -->|/v1/export\ncatalog sync| POS[ProdukPOS PWA\n/pos/]
-    POS --> IDB[(IndexedDB\ncatalog · prices · sales)]
-    subgraph Device (fully offline after first sync)
-        POS
-        IDB
+    OFF["Open Food Facts<br/>search API"] -->|npm run ingest| DB[("SQLite products.db<br/>+ FTS5 index")]
+    DB -->|read-only| API["Fastify API<br/>/v1/*"]
+    API --> DOCS["Swagger UI<br/>/docs"]
+    API -->|"catalog sync<br/>/v1/export"| POS["ProdukPOS PWA<br/>/pos/"]
+    subgraph DEVICE["Merchant device — fully offline after first sync"]
+        POS --> IDB[("IndexedDB<br/>catalog · prices · sales")]
     end
 ```
 
@@ -102,7 +120,7 @@ List endpoints accept `page` and `per_page` (max 100) and return
 Look up a product by barcode:
 
 ```bash
-curl https://your-host/v1/products/8999999002503
+curl https://produkpos.vercel.app/v1/products/8999999002503
 ```
 
 ```json
@@ -121,13 +139,13 @@ curl https://your-host/v1/products/8999999002503
 Search:
 
 ```bash
-curl 'https://your-host/v1/search?q=mie+goreng&per_page=5'
+curl 'https://produkpos.vercel.app/v1/search?q=mie+goreng&per_page=5'
 ```
 
 Filter by brand:
 
 ```bash
-curl 'https://your-host/v1/products?brand=Indomie'
+curl 'https://produkpos.vercel.app/v1/products?brand=Indomie'
 ```
 
 Rate limit: **120 requests/minute per IP** by default (configurable). The
@@ -172,6 +190,17 @@ right, with the search box focused for keyboard-first scanning.
 | `TRUST_PROXY` | unset | Set to `1` behind a reverse proxy so rate limiting sees real client IPs |
 
 ## Deployment
+
+### Vercel (how the live instance is deployed)
+
+[api/index.js](api/index.js) wraps the Fastify app as a serverless function
+and [vercel.json](vercel.json) routes all paths to it, bundling the SQLite
+database and POS assets into the function. Deploy your own:
+
+```bash
+npm run ingest
+vercel deploy --prod
+```
 
 ### Docker
 

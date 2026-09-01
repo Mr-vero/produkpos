@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/index.js": {
+      "includeFiles": "{data,pos,node_modules/@fastify/swagger-ui/static}/**",
+      "maxDuration": 10
+    }
+  },
+  "rewrites": [{ "source": "/(.*)", "destination": "/api" }]
+}
