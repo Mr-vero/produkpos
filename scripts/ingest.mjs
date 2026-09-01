@@ -168,6 +168,10 @@ FROM products
 db.exec('INSERT INTO products_fts(products_fts) VALUES (\'optimize\')');
 db.pragma('optimize');
 db.pragma('wal_checkpoint(TRUNCATE)');
+// Leave the file in DELETE journal mode: WAL is written into the DB header and
+// requires creating -wal/-shm sidecars on open, which fails on read-only
+// filesystems (e.g. serverless deploys).
+db.pragma('journal_mode = DELETE');
 
 const count = db.prepare('SELECT count(*) AS n FROM products').get().n;
 console.log(`Done. Database now holds ${count} products at ${DB_PATH}`);

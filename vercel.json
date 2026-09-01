@@ -1,5 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run ingest && node scripts/check-db.mjs",
   "functions": {
     "api/index.js": {
       "includeFiles": "{data,pos,node_modules/@fastify/swagger-ui/static}/**",

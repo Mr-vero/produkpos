@@ -1,0 +1,49 @@
+name: Weekly catalog re-ingest & deploy
+
+on:
+  schedule:
+    # Sundays 20:00 UTC = Mondays 03:00 WIB, before the work week starts
+    - cron: '0 20 * * 0'
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  ingest-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ingest catalog from Open Food Facts
+        run: npm run ingest
+
+      - name: Sanity-check the dataset
+        # Early warning before we even call Vercel (the Vercel build runs the
+        # same ingest + check and is the authoritative gate).
+        run: node scripts/check-db.mjs
+
+      - name: Deploy to Vercel (production)
+        run: npx vercel@latest deploy --prod --yes --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+      - name: Verify live instance
+        run: |
+          sleep 10
+          curl -sf https://produkpos.vercel.app/healthz
+          curl -sf 'https://produkpos.vercel.app/v1/stats'
+          curl -sf 'https://produkpos.vercel.app/v1/search?q=indomie&per_page=1' | grep -q '"total"'
+          echo "Live instance healthy."
