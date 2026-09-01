@@ -1,0 +1,27 @@
+{
+  "name": "produk-api",
+  "version": "1.0.0",
+  "description": "Open public API for Indonesian retail products",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "ingest": "node scripts/ingest.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@fastify/compress": "^8.0.1",
+    "@fastify/cors": "^10.0.1",
+    "@fastify/helmet": "^13.0.0",
+    "@fastify/rate-limit": "^10.1.1",
+    "@fastify/static": "^10.1.3",
+    "@fastify/swagger": "^9.4.0",
+    "@fastify/swagger-ui": "^5.1.0",
+    "better-sqlite3": "^12.2.0",
+    "fastify": "^5.1.0"
+  },
+  "license": "MIT"
+}
